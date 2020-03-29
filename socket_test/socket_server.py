@@ -1,6 +1,6 @@
-#服务端
 import socket
 
+# 服务端
 server = socket.socket()
 server.bind(("0.0.0.0", 8000))
 server.listen()
