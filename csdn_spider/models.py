@@ -20,8 +20,6 @@ class Topic(BaseModel):
     content = TextField(default="")
     # 作者id
     author_id = CharField()
-    # 创建时间
-    create_time = DateTimeField()
     # 回答数量
     answer_nums = IntegerField(default=0)
     # 点击数
@@ -34,6 +32,10 @@ class Topic(BaseModel):
     score = IntegerField(default=0)
     # 状态： TODO
     status = CharField()
+    # 创建时间
+    create_time = DateTimeField()
+    # 最后回复时间
+    last_answer_time = DateTimeField()
 
 
 class Answer(BaseModel):

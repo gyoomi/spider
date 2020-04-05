@@ -3,10 +3,12 @@
 import re
 import ast
 from urllib import parse
+from datetime import datetime
 
 import requests
 
 from csdn_spider.models import *
+from scrapy import Selector
 
 # csdn解析到的所有的url
 http_prefix = "https://bbs.csdn.net/"
@@ -24,7 +26,6 @@ def get_nodes_json():
 
 
 def obtain_accessible_url(nodes_list):
-
 	"""
 	提取可访问的子菜单的url.
 	结果 -> 包含顶级和儿子节点url
@@ -78,7 +79,86 @@ def add_other_category_url():
 	return last_url
 
 
+def parse_url(url):
+	"""
+	解析url下的数据并进行入库保存
+		1. 发送请求获取列表页面信息
+		2. 解析页面获取有效的行数据
+		3. 解析行数据 -> topic answer author
+		4. 保存相关数据
+	"""
+	response_text = requests.get(url).text
+	sel = Selector(text=response_text)
+	all_trs = sel.xpath("//table[@class='forums_tab_table']//tbody//tr")
+
+	for tr in all_trs:
+		tr_sel = Selector(text=tr.extract())
+
+		topic = Topic()
+		topic_url = ""
+		author_url = ""
+		if tr_sel.xpath("//td[1]/span/text()").extract():
+			status = tr_sel.xpath("//td[1]/span/text()").extract()[0]
+			topic.status = status
+		if tr_sel.xpath("//td[2]/em/text()").extract():
+			score = tr_sel.xpath("//td[2]/em/text()").extract()[0]
+			topic.score = score
+		if tr_sel.xpath("//td[3]/a[contains(@class, 'forums_title')]/@href"):
+			topic_url = tr_sel.xpath("//td[3]/a[contains(@class, 'forums_title')]/@href").extract()[0]
+			topic_url = parse.urljoin(http_prefix, topic_url)
+			topic_id = topic_url.split("/")[-1]
+			topic.id = int(topic_id)
+		if tr_sel.xpath("//td[3]/a[contains(@class, 'forums_title')]/text()"):
+			topic_title = tr_sel.xpath("//td[3]/a[contains(@class, 'forums_title')]/text()").extract()[0]
+			topic.title = topic_title
+		if tr_sel.xpath("//td[4]/a/@href"):
+			author_url = tr_sel.xpath("//td[4]/a/@href").extract()[0]
+			author_url = parse.urljoin(http_prefix, author_url)
+			author_id = author_url.split("/")[-1]
+			topic.author_id = author_id
+		if tr_sel.xpath("//td[4]/em/text()"):
+			create_time_str = tr_sel.xpath("//td[4]/em/text()").extract()[0]
+			create_time = datetime.strptime(create_time_str, "%Y-%m-%d %H:%M")
+			topic.create_time = create_time
+		if tr_sel.xpath("//td[5]/span/text()"):
+			reply_text = tr_sel.xpath("//td[5]/span/text()").extract()[0]
+			answer_nums = reply_text.split("/")[0]
+			click_nums = reply_text.split("/")[1]
+			topic.answer_nums = answer_nums
+			topic.click_nums = click_nums
+		if tr_sel.xpath("//td[6]/em/text()"):
+			last_answer_time_str = tr_sel.xpath("//td[6]/em/text()").extract()[0]
+			last_answer_time = datetime.strptime(last_answer_time_str, "%Y-%m-%d %H:%M")
+			topic.last_answer_time = last_answer_time
+
+		# 保存topic
+		topic.save()
+		parse_topic(topic_url)
+		parse_author(author_url)
+
+		if tr_sel.xpath("//a[@class='pageliststy next_page']/@href"):
+			next_page_href = tr_sel.xpath("//a[@class='pageliststy next_page']/@href").extract()[0]
+			next_page_url = parse.urljoin(http_prefix, next_page_href)
+			parse_url(next_page_url)
+
+
+def parse_topic(url):
+	"""
+	获取帖子的详情和回答
+	"""
+
+	pass
+
+
+def parse_author(url):
+	"""
+	获取帖子的作者
+	"""
+
+	pass
+
+
 if __name__ == '__main__':
-	# list1 = add_other_category_url()
-	resp_text = requests.get("https://bbs.csdn.net/forums/ios").text
-	print(resp_text)
+	test_url = "https://bbs.csdn.net/forums/ios"
+	parse_url(test_url)
+	print("ok")
