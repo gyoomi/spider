@@ -92,52 +92,56 @@ def parse_url(url):
 	all_trs = sel.xpath("//table[@class='forums_tab_table']//tbody//tr")
 
 	for tr in all_trs:
-		tr_sel = Selector(text=tr.extract())
-
 		topic = Topic()
 		topic_url = ""
 		author_url = ""
-		if tr_sel.xpath("//td[1]/span/text()").extract():
-			status = tr_sel.xpath("//td[1]/span/text()").extract()[0]
+
+		if tr.xpath(".//td[1]/span/text()").extract():
+			status = tr.xpath(".//td[1]/span/text()").extract()[0]
 			topic.status = status
-		if tr_sel.xpath("//td[2]/em/text()").extract():
-			score = tr_sel.xpath("//td[2]/em/text()").extract()[0]
-			topic.score = score
-		if tr_sel.xpath("//td[3]/a[contains(@class, 'forums_title')]/@href"):
-			topic_url = tr_sel.xpath("//td[3]/a[contains(@class, 'forums_title')]/@href").extract()[0]
+		if tr.xpath(".//td[2]/em/text()").extract():
+			score = tr.xpath(".//td[2]/em/text()").extract()[0]
+			topic.score = int(score)
+		if tr.xpath(".//td[3]/a[contains(@class, 'forums_title')]/@href"):
+			topic_url = tr.xpath(".//td[3]/a[contains(@class, 'forums_title')]/@href").extract()[0]
 			topic_url = parse.urljoin(http_prefix, topic_url)
 			topic_id = topic_url.split("/")[-1]
 			topic.id = int(topic_id)
-		if tr_sel.xpath("//td[3]/a[contains(@class, 'forums_title')]/text()"):
-			topic_title = tr_sel.xpath("//td[3]/a[contains(@class, 'forums_title')]/text()").extract()[0]
+		if tr.xpath(".//td[3]/a[contains(@class, 'forums_title')]/text()"):
+			topic_title = tr.xpath(".//td[3]/a[contains(@class, 'forums_title')]/text()").extract()[0]
 			topic.title = topic_title
-		if tr_sel.xpath("//td[4]/a/@href"):
-			author_url = tr_sel.xpath("//td[4]/a/@href").extract()[0]
+		if tr.xpath(".//td[4]/a/@href"):
+			author_url = tr.xpath(".//td[4]/a/@href").extract()[0]
 			author_url = parse.urljoin(http_prefix, author_url)
 			author_id = author_url.split("/")[-1]
 			topic.author_id = author_id
-		if tr_sel.xpath("//td[4]/em/text()"):
-			create_time_str = tr_sel.xpath("//td[4]/em/text()").extract()[0]
+		if tr.xpath(".//td[4]/em/text()"):
+			create_time_str = tr.xpath(".//td[4]/em/text()").extract()[0]
 			create_time = datetime.strptime(create_time_str, "%Y-%m-%d %H:%M")
 			topic.create_time = create_time
-		if tr_sel.xpath("//td[5]/span/text()"):
-			reply_text = tr_sel.xpath("//td[5]/span/text()").extract()[0]
+		if tr.xpath(".//td[5]/span/text()"):
+			reply_text = tr.xpath(".//td[5]/span/text()").extract()[0]
 			answer_nums = reply_text.split("/")[0]
 			click_nums = reply_text.split("/")[1]
-			topic.answer_nums = answer_nums
-			topic.click_nums = click_nums
-		if tr_sel.xpath("//td[6]/em/text()"):
-			last_answer_time_str = tr_sel.xpath("//td[6]/em/text()").extract()[0]
+			topic.answer_nums = int(answer_nums)
+			topic.click_nums = int(click_nums)
+		if tr.xpath(".//td[6]/em/text()"):
+			last_answer_time_str = tr.xpath(".//td[6]/em/text()").extract()[0]
 			last_answer_time = datetime.strptime(last_answer_time_str, "%Y-%m-%d %H:%M")
 			topic.last_answer_time = last_answer_time
 
 		# 保存topic
-		topic.save()
-		parse_topic(topic_url)
-		parse_author(author_url)
+		has_exist_in_db = Topic.select().where(Topic.id == topic.id)
+		if has_exist_in_db:
+			topic.save()
+		else:
+			topic.save(force_insert=True)
 
-		if tr_sel.xpath("//a[@class='pageliststy next_page']/@href"):
-			next_page_href = tr_sel.xpath("//a[@class='pageliststy next_page']/@href").extract()[0]
+		# parse_topic(topic_url)
+		# parse_author(author_url)
+
+		if tr.xpath("//a[@class='pageliststy next_page']/@href"):
+			next_page_href = tr.xpath("//a[@class='pageliststy next_page']/@href").extract()[0]
 			next_page_url = parse.urljoin(http_prefix, next_page_href)
 			parse_url(next_page_url)
 
