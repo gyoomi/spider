@@ -140,10 +140,10 @@ def parse_url(url):
 		# parse_topic(topic_url)
 		# parse_author(author_url)
 
-		if tr.xpath("//a[@class='pageliststy next_page']/@href"):
-			next_page_href = tr.xpath("//a[@class='pageliststy next_page']/@href").extract()[0]
-			next_page_url = parse.urljoin(http_prefix, next_page_href)
-			parse_url(next_page_url)
+	if sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href"):
+		next_page_href = sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href").extract()[0]
+		next_page_url = parse.urljoin(http_prefix, next_page_href)
+		parse_url(next_page_url)
 
 
 def parse_topic(url):
