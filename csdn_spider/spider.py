@@ -203,6 +203,11 @@ def parse_topic(url):
 
 			answer.save()
 
+	if sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href"):
+		next_page_href = sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href").extract()[0]
+		next_page_url = parse.urljoin(http_prefix, next_page_href)
+		parse_topic(next_page_url)
+
 
 def parse_author(url):
 	"""
