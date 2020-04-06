@@ -141,8 +141,7 @@ def parse_url(url):
 	# parse_author(author_url)
 
 	if sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href"):
-		next_page_href = \
-		sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href").extract()[0]
+		next_page_href = sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href").extract()[0]
 		next_page_url = parse.urljoin(http_prefix, next_page_href)
 		parse_url(next_page_url)
 
@@ -161,46 +160,48 @@ def parse_topic(url):
 	topic = Topic()
 	topic.id = topic_id
 
-	topic_item = all_divs[0]
-	if topic_item.xpath(".//div[@class='post_body post_body_min_h']"):
-		content = topic_item.xpath(".//div[@class='post_body post_body_min_h']").extract()[0]
-		topic.content = content
-	if topic_item.xpath(".//label[@class='red_praise digg']/em/text()"):
-		praise_nums = topic_item.xpath(".//label[@class='red_praise digg']/em/text()").extract()[0]
-		topic.praise_nums = int(praise_nums)
-	if topic_item.xpath(".//div[@class='close_topic']/text()"):
-		jtl_str = topic_item.xpath(".//div[@class='close_topic']/text()").extract()[0]
-		jtl = 0.0
-		jtl_match = re.search("(\\d+)%", jtl_str)
-		if jtl_match:
-			jtl = jtl_match.group(1)
+	if all_divs[0]:
+		topic_item = all_divs[0]
+		if topic_item.xpath(".//div[@class='post_body post_body_min_h']"):
+			content = topic_item.xpath(".//div[@class='post_body post_body_min_h']").extract()[0]
+			topic.content = content
+		if topic_item.xpath(".//label[@class='red_praise digg']/em/text()"):
+			praise_nums = topic_item.xpath(".//label[@class='red_praise digg']/em/text()").extract()[0]
+			topic.praise_nums = int(praise_nums)
+		if topic_item.xpath(".//div[@class='close_topic']/text()"):
+			jtl_str = topic_item.xpath(".//div[@class='close_topic']/text()").extract()[0]
+			jtl = 0.0
+			jtl_match = re.search("(\\d+)%", jtl_str)
+			if jtl_match:
+				jtl = jtl_match.group(1)
 
-		topic.jtl = float(jtl)
+			topic.jtl = float(jtl)
 
-	# 更新帖子
-	topic.save()
+		# 更新帖子
+		topic.save()
 
 	""" 处理回答 """
-	for answer_item in all_divs[1:]:
-		answer = Answer()
-		answer.topic_id = topic_id
+	if len(all_divs) > 1:
+		for answer_item in all_divs[1:]:
+			answer = Answer()
+			answer.topic_id = topic_id
 
-		if answer_item.xpath(".//div[@class='nick_name']/a[1]/@href"):
-			author_info = answer_item.xpath(".//div[@class='nick_name']/a[1]/@href").extract()[0]
-			author_id = author_info.split("/")[-1]
-			answer.author_id = author_id
-		if answer_item.xpath(".//label[@class='date_time']/text()"):
-			create_time_str = answer_item.xpath(".//label[@class='date_time']/text()").extract()[0]
-			create_time = datetime.strptime(create_time_str, "%Y-%m-%d %H:%M:%S")
-			answer.create_time = create_time
-		if answer_item.xpath(".//div[@class='post_body post_body_min_h']"):
-			content = answer_item.xpath(".//div[@class='post_body post_body_min_h']").extract()[0]
-			answer.content = content
-		if answer_item.xpath(".//label[@class='red_praise digg']/em/text()"):
-			praise_nums = answer_item.xpath(".//label[@class='red_praise digg']/em/text()").extract()[0]
-			answer.praise_nums = int(praise_nums)
+			if answer_item.xpath(".//div[@class='nick_name']/a[1]/@href"):
+				author_info = answer_item.xpath(".//div[@class='nick_name']/a[1]/@href").extract()[0]
+				author_id = author_info.split("/")[-1]
+				answer.author_id = author_id
+			if answer_item.xpath(".//label[@class='date_time']/text()"):
+				create_time_str = answer_item.xpath(".//label[@class='date_time']/text()").extract()[0]
+				create_time = datetime.strptime(create_time_str, "%Y-%m-%d %H:%M:%S")
+				answer.create_time = create_time
+			if answer_item.xpath(".//div[@class='post_body post_body_min_h']"):
+				content = answer_item.xpath(".//div[@class='post_body post_body_min_h']").extract()[0]
+				answer.content = content
+			if answer_item.xpath(".//label[@class='red_praise digg']/em/text()"):
+				praise_nums = answer_item.xpath(".//label[@class='red_praise digg']/em/text()").extract()[0]
+				answer.praise_nums = int(praise_nums)
 
-		answer.save()
+			answer.save()
 
 
 def parse_author(url):
