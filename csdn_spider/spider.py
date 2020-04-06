@@ -215,7 +215,6 @@ def parse_author(url):
 	"""
 	获取帖子的作者
 	"""
-	url = "https://me.csdn.net/bbs/weixin_39723544"
 
 	author_id = url.split("/")[-1]
 	headers = {
