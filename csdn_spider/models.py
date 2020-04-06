@@ -63,7 +63,7 @@ class Author(BaseModel):
     # 回帖数
     answer_nums = IntegerField(default=0)
     # 回帖率
-    praise_nums = FloatField(default=0.0)
+    answer_rate = FloatField(default=0.0)
     # 粉丝数
     follower_nums = IntegerField(default=0)
     # 关注数

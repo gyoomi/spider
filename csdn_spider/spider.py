@@ -141,7 +141,8 @@ def parse_url(url):
 	# parse_author(author_url)
 
 	if sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href"):
-		next_page_href = sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href").extract()[0]
+		next_page_href = \
+		sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href").extract()[0]
 		next_page_url = parse.urljoin(http_prefix, next_page_href)
 		parse_url(next_page_url)
 
@@ -204,7 +205,8 @@ def parse_topic(url):
 			answer.save()
 
 	if sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href"):
-		next_page_href = sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href").extract()[0]
+		next_page_href = \
+		sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href").extract()[0]
 		next_page_url = parse.urljoin(http_prefix, next_page_href)
 		parse_topic(next_page_url)
 
@@ -213,23 +215,50 @@ def parse_author(url):
 	"""
 	获取帖子的作者
 	"""
-	url = "https://me.csdn.net/qianguohua"
+	url = "https://me.csdn.net/bbs/weixin_39723544"
 
 	author_id = url.split("/")[-1]
 	headers = {
-		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"
+		'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36'
 	}
-	response_text = requests.get(url, headers=headers)
+	response_text = requests.get(url, headers=headers).text
 	sel = Selector(text=response_text)
 
 	author = Author()
 	author.id = author_id
 
+	if sel.xpath("//p[@class='lt_title']/text()"):
+		name_str = sel.xpath("//p[@class='lt_title']/text()").extract()[2].strip()
+		author.name = name_str
+	if sel.xpath("//div[@class='me_chanel_det_item access'][1]/span/text()"):
+		topic_nums_str = sel.xpath("//div[@class='me_chanel_det_item access'][1]/span/text()").extract()[0]
+		author.topic_nums = int(topic_nums_str.strip())
+	if sel.xpath("//div[@class='me_chanel_det_item access'][2]/span/text()"):
+		answer_nums_str = sel.xpath("//div[@class='me_chanel_det_item access'][2]/span/text()").extract()[0]
+		author.answer_nums = int(answer_nums_str.strip())
+	if sel.xpath("//div[@class='me_chanel_det_item access'][3]/span/text()"):
+		answer_rate_str = sel.xpath("//div[@class='me_chanel_det_item access'][3]/span/text()").extract()[0]
+		answer_rate = 0.0
+		answer_rate_match = re.search("(\\d+)%", answer_rate_str.strip())
+		if answer_rate_match:
+			answer_rate = answer_rate_match.group(1)
+		author.answer_rate = float(answer_rate)
+	if sel.xpath("//div[@class='fans']/a/span/text()"):
+		follower_nums_str = sel.xpath("//div[@class='fans']/a/span/text()").extract()[0]
+		author.follower_nums = int(follower_nums_str.strip())
+	if sel.xpath("//div[@class='att']/a/span/text()"):
+		following_nums_str = sel.xpath("//div[@class='att']/a/span/text()").extract()[0]
+		author.following_nums = int(following_nums_str.strip())
 
+	""" 保存author """
+	has_exist_in_db = Author.select().where(Author.id == author_id)
+	if has_exist_in_db:
+		author.save()
+	else:
+		author.save(force_insert=True)
 
 
 if __name__ == '__main__':
-	# test_url = "https://bbs.csdn.net/forums/ios"
-	# parse_url(test_url)
-	parse_author("")
+	test_url = "https://bbs.csdn.net/forums/ios"
+	parse_url(test_url)
 	print("ok")
