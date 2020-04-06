@@ -138,8 +138,8 @@ def parse_url(url):
 		else:
 			topic.save(force_insert=True)
 
-	#parse_topic(topic_url)
-	parse_author(author_url)
+		parse_topic(topic_url)
+		parse_author(author_url)
 
 	if sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href"):
 		next_page_href = sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href").extract()[0]
@@ -214,7 +214,6 @@ def parse_author(url):
 	"""
 	获取帖子的作者
 	"""
-	print(url)
 
 	author_id = url.split("/")[-1]
 	headers = {
@@ -244,10 +243,10 @@ def parse_author(url):
 		author.answer_rate = float(answer_rate)
 	if sel.xpath("//div[@class='fans']/a/span/text()"):
 		follower_nums_str = sel.xpath("//div[@class='fans']/a/span/text()").extract()[0]
-		author.follower_nums = int(follower_nums_str.strip())
+		author.follower_nums = follower_nums_str.strip()
 	if sel.xpath("//div[@class='att']/a/span/text()"):
 		following_nums_str = sel.xpath("//div[@class='att']/a/span/text()").extract()[0]
-		author.following_nums = int(following_nums_str.strip())
+		author.following_nums = following_nums_str.strip()
 
 	""" 保存author """
 	has_exist_in_db = Author.select().where(Author.id == author_id)

@@ -59,15 +59,15 @@ class Author(BaseModel):
     # 作者名称
     name = CharField(default="")
     # 发帖数
-    topic_nums = CharField(default="")
+    topic_nums = CharField(max_length=50, default="")
     # 回帖数
-    answer_nums = CharField(default="")
+    answer_nums = CharField(max_length=50, default="")
     # 回帖率
-    answer_rate = FloatField(default=0.0)
+    answer_rate = CharField(max_length=50, default="")
     # 粉丝数
-    follower_nums = IntegerField(default=0)
+    follower_nums = CharField(max_length=50, default="")
     # 关注数
-    following_nums = IntegerField(default=0)
+    following_nums = CharField(max_length=50, default="")
 
 
 if __name__ == '__main__':
