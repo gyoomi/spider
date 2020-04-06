@@ -58,24 +58,12 @@ class Author(BaseModel):
     id = CharField(primary_key=True)
     # 作者名称
     name = CharField()
-    # 访问数
-    click_nums = IntegerField(default=0)
-    # 原创数
-    original_nums = IntegerField(default=0)
-    # 转发数
-    forward_nums = IntegerField(default=0)
-    # 排名数
-    rate = IntegerField(default=0)
-    # 评论数
+    # 发帖数
+    topic_nums = IntegerField(default=0)
+    # 回帖数
     answer_nums = IntegerField(default=0)
-    # 获赞数
-    praise_nums = IntegerField(default=0)
-    # 描述
-    desc = TextField(null=True)
-    # 行业
-    industry = CharField(null=True)
-    # 地理位置
-    location = CharField(null=True)
+    # 回帖率
+    praise_nums = FloatField(default=0.0)
     # 粉丝数
     follower_nums = IntegerField(default=0)
     # 关注数

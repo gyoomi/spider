@@ -213,11 +213,23 @@ def parse_author(url):
 	"""
 	获取帖子的作者
 	"""
+	url = "https://me.csdn.net/qianguohua"
 
-	pass
+	author_id = url.split("/")[-1]
+	headers = {
+		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"
+	}
+	response_text = requests.get(url, headers=headers)
+	sel = Selector(text=response_text)
+
+	author = Author()
+	author.id = author_id
+
+
 
 
 if __name__ == '__main__':
-	test_url = "https://bbs.csdn.net/forums/ios"
-	parse_url(test_url)
+	# test_url = "https://bbs.csdn.net/forums/ios"
+	# parse_url(test_url)
+	parse_author("")
 	print("ok")
