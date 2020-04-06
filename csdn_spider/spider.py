@@ -12,6 +12,7 @@ from scrapy import Selector
 
 # csdn解析到的所有的url
 http_prefix = "https://bbs.csdn.net/"
+author_http_prefix = "https://me.csdn.net/bbs/"
 accessible_url_list = []
 
 
@@ -112,8 +113,8 @@ def parse_url(url):
 			topic.title = topic_title
 		if tr.xpath(".//td[4]/a/@href"):
 			author_url = tr.xpath(".//td[4]/a/@href").extract()[0]
-			author_url = parse.urljoin(http_prefix, author_url)
 			author_id = author_url.split("/")[-1]
+			author_url = parse.urljoin(author_http_prefix, author_id)
 			topic.author_id = author_id
 		if tr.xpath(".//td[4]/em/text()"):
 			create_time_str = tr.xpath(".//td[4]/em/text()").extract()[0]
@@ -137,12 +138,11 @@ def parse_url(url):
 		else:
 			topic.save(force_insert=True)
 
-	parse_topic(topic_url)
-	# parse_author(author_url)
+	#parse_topic(topic_url)
+	parse_author(author_url)
 
 	if sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href"):
-		next_page_href = \
-		sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href").extract()[0]
+		next_page_href = sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href").extract()[0]
 		next_page_url = parse.urljoin(http_prefix, next_page_href)
 		parse_url(next_page_url)
 
@@ -205,8 +205,7 @@ def parse_topic(url):
 			answer.save()
 
 	if sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href"):
-		next_page_href = \
-		sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href").extract()[0]
+		next_page_href = sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href").extract()[0]
 		next_page_url = parse.urljoin(http_prefix, next_page_href)
 		parse_topic(next_page_url)
 
@@ -215,6 +214,7 @@ def parse_author(url):
 	"""
 	获取帖子的作者
 	"""
+	print(url)
 
 	author_id = url.split("/")[-1]
 	headers = {
@@ -231,10 +231,10 @@ def parse_author(url):
 		author.name = name_str
 	if sel.xpath("//div[@class='me_chanel_det_item access'][1]/span/text()"):
 		topic_nums_str = sel.xpath("//div[@class='me_chanel_det_item access'][1]/span/text()").extract()[0]
-		author.topic_nums = int(topic_nums_str.strip())
+		author.topic_nums = topic_nums_str.strip()
 	if sel.xpath("//div[@class='me_chanel_det_item access'][2]/span/text()"):
 		answer_nums_str = sel.xpath("//div[@class='me_chanel_det_item access'][2]/span/text()").extract()[0]
-		author.answer_nums = int(answer_nums_str.strip())
+		author.answer_nums = answer_nums_str.strip()
 	if sel.xpath("//div[@class='me_chanel_det_item access'][3]/span/text()"):
 		answer_rate_str = sel.xpath("//div[@class='me_chanel_det_item access'][3]/span/text()").extract()[0]
 		answer_rate = 0.0

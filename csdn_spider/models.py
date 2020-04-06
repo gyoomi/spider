@@ -57,11 +57,11 @@ class Author(BaseModel):
     # 作者id: 来源CSDN页面标识
     id = CharField(primary_key=True)
     # 作者名称
-    name = CharField()
+    name = CharField(default="")
     # 发帖数
-    topic_nums = IntegerField(default=0)
+    topic_nums = CharField(default="")
     # 回帖数
-    answer_nums = IntegerField(default=0)
+    answer_nums = CharField(default="")
     # 回帖率
     answer_rate = FloatField(default=0.0)
     # 粉丝数
@@ -72,4 +72,6 @@ class Author(BaseModel):
 
 if __name__ == '__main__':
     db.create_tables([Topic, Answer, Author])
+    print("tables init [OK]")
+
 
