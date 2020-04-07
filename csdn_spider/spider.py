@@ -147,14 +147,14 @@ def parse_url(url):
 		parse_url(next_page_url)
 
 
-def parse_topic(url):
+def parse_topic(topic_url):
 	"""
 	获取帖子的详情和回答
 	"""
 
-	topic_id = int(url.split("/")[-1])
+	topic_id = int(topic_url.split("/")[-1])
 
-	response_text = requests.get(url).text
+	response_text = requests.get(topic_url).text
 	sel = Selector(text=response_text)
 	all_divs = sel.xpath("//div[starts-with(@id, 'post-')]")
 	# 一楼肯定是帖子内容,且肯定有内容
@@ -207,19 +207,61 @@ def parse_topic(url):
 	if sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href"):
 		next_page_href = sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href").extract()[0]
 		next_page_url = parse.urljoin(http_prefix, next_page_href)
-		parse_topic(next_page_url)
+		# 解析第二页及之后的内容
+		parse_topic_of_next_page(next_page_url, topic_id)
 
 
-def parse_author(url):
+def parse_topic_of_next_page(next_page_url_of_topic, topic_id):
+	"""
+		获取帖子回复中多页情况下，非第一页的详情回答
+	"""
+
+	topic_id = topic_id
+
+	response_text = requests.get(next_page_url_of_topic).text
+	sel = Selector(text=response_text)
+	all_divs = sel.xpath("//div[starts-with(@id, 'post-')]")
+
+	""" 处理回答 """
+	if len(all_divs) > 0:
+		for answer_item in all_divs:
+			answer = Answer()
+			answer.topic_id = topic_id
+
+			if answer_item.xpath(".//div[@class='nick_name']/a[1]/@href"):
+				author_info = answer_item.xpath(".//div[@class='nick_name']/a[1]/@href").extract()[0]
+				author_id = author_info.split("/")[-1]
+				answer.author_id = author_id
+			if answer_item.xpath(".//label[@class='date_time']/text()"):
+				create_time_str = answer_item.xpath(".//label[@class='date_time']/text()").extract()[0]
+				create_time = datetime.strptime(create_time_str, "%Y-%m-%d %H:%M:%S")
+				answer.create_time = create_time
+			if answer_item.xpath(".//div[@class='post_body post_body_min_h']"):
+				content = answer_item.xpath(".//div[@class='post_body post_body_min_h']").extract()[0]
+				answer.content = content
+			if answer_item.xpath(".//label[@class='red_praise digg']/em/text()"):
+				praise_nums = answer_item.xpath(".//label[@class='red_praise digg']/em/text()").extract()[0]
+				answer.praise_nums = int(praise_nums)
+
+			answer.save()
+
+	if sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href"):
+		next_page_href = sel.xpath("//a[contains(@class,'pageliststy next_page') and contains(text(), '下一页')]/@href").extract()[0]
+		next_page_url = parse.urljoin(http_prefix, next_page_href)
+		# 解析下一页的回复
+		parse_topic_of_next_page(next_page_url, topic_id)
+
+
+def parse_author(author_url):
 	"""
 	获取帖子的作者
 	"""
 
-	author_id = url.split("/")[-1]
+	author_id = author_url.split("/")[-1]
 	headers = {
 		'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36'
 	}
-	response_text = requests.get(url, headers=headers).text
+	response_text = requests.get(author_url, headers=headers).text
 	sel = Selector(text=response_text)
 
 	author = Author()
@@ -257,6 +299,10 @@ def parse_author(url):
 
 
 if __name__ == '__main__':
-	test_url = "https://bbs.csdn.net/forums/ios"
-	parse_url(test_url)
+	urls = add_other_category_url()
+	for url_to_use in urls:
+		parse_url(url_to_use)
+	# url = "https://bbs.csdn.net/forums/ASP"
+	# parse_url(url)
+
 	print("ok")
