@@ -4,6 +4,12 @@
 import time
 from threading import Thread
 
+"""
+创建线程的两种方法：
+	1. 实例化Thread类
+	2. 继承Thread类
+"""
+
 
 def sleep_task(sleep_time):
 	print("sleep {} start...".format(sleep_time))
