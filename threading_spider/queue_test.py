@@ -4,6 +4,7 @@
 from queue import Queue
 
 if __name__ == '__main__':
+    # 类似于Java中线程安全的集合
     message_queue = Queue()
     message_queue.put("test111")
     message_queue.put("test222")
