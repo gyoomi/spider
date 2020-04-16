@@ -10,4 +10,5 @@
 pip install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
 pip install scrapy -i https://pypi.tuna.tsinghua.edu.cn/simple
 pip install peewee -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install selenium -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
