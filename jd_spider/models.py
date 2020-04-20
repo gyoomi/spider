@@ -17,11 +17,13 @@ class Good(BaseModel):
     """
     id = IntegerField(primary_key=True, verbose_name="主键")
     name = CharField(max_length=500, verbose_name="商品名")
+    price = FloatField(default=0.0, verbose_name="商品价格")
     content = TextField(default="", verbose_name="內容")
     supplier = CharField(max_length=500, verbose_name="供货商")
     ggbz = TextField(default="", verbose_name="规格和包装")
     image_list = TextField(default="")
     comment_nums = IntegerField(default=0, verbose_name="评论数")
+    good_rate = IntegerField(default=0, verbose_name="好评率")
     has_image_comment_nums = IntegerField(default=0, verbose_name="晒图数")
     has_video_comment_nums = IntegerField(default=0, verbose_name="视频晒单数")
     has_add_comment_nums = IntegerField(default=0, verbose_name="追评数")
