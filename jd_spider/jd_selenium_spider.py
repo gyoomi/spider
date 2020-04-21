@@ -39,5 +39,27 @@ def parse_good(good_id):
     bad_comment_nums = sel.xpath("//ul[@class='filter-list']/li[@clstag='shangpin|keycount|product|chaping']/@data-num").extract()[0]
 
     good = Good()
-    # TODO
+    good.id = good_id
+    good.name = name
+    good.content = content
+    good.price = price
+    good.image_list = json.dumps(image_list)
+    good.supplier = supplier
+    good.good_rate = good_rate
+    good.comment_nums = comment_nums
+    good.has_image_comment_nums = has_image_comment_nums
+    good.has_video_comment_nums = has_video_comment_nums
+    good.has_add_comment_nums = has_add_comment_nums
+    good.good_comment_nums = good_comment_nums
+    good.middle_comment_nums = middle_comment_nums
+    good.bad_comment_nums = bad_comment_nums
+
+    has_exist_in_db = Good.select().where(Good.id == good.id)
+    if has_exist_in_db:
+        good.save()
+    else:
+        good.save(force_insert=True)
+
+
+if __name__ == '__main__':
     pass
