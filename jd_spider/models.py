@@ -15,7 +15,7 @@ class Good(BaseModel):
     """
         商品对象
     """
-    id = IntegerField(primary_key=True, verbose_name="主键")
+    id = BigIntegerField(primary_key=True, verbose_name="主键")
     name = CharField(max_length=500, verbose_name="商品名")
     price = FloatField(default=0.0, verbose_name="商品价格")
     content = TextField(default="", verbose_name="內容")
