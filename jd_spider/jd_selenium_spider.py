@@ -9,9 +9,17 @@ from jd_spider.models import *
 
 
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from scrapy import Selector
 
-browser = webdriver.Chrome(executable_path="D:/programs/dev/chromedriver_win32/chromedriver.exe")
+chrome_options = Options()
+# 设置无头模式
+chrome_options.add_argument("--headless")
+# 官方文档推荐，用来规避一些错误
+chrome_options.add_argument("--disable-gpu")
+# 设置不加载图片
+chrome_options.add_argument("blink-settings=imagesEnabled=false")
+browser = webdriver.Chrome(executable_path="D:/programs/dev/chromedriver_win32/chromedriver.exe", chrome_options=chrome_options)
 
 
 def parse_good(good_id):
