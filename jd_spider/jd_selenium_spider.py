@@ -35,10 +35,10 @@ def parse_good(good_id):
 
         comment_ele = browser.find_element_by_xpath("//li[@data-anchor='#comment']")
         comment_ele.click()
-        time.sleep(5)
+        time.sleep(10)
 
         sel = Selector(text=browser.page_source)
-        good_rate = int(sel.xpath("//div[@class='percent-con']/text()").extract()[0])
+        #good_rate = int(sel.xpath("//div[@class='percent-con']/text()").extract()[0])
         tag_list = sel.xpath("//div[@class='tag-list tag-available']//span/text()").extract()
         comment_nums = sel.xpath("//ul[@class='filter-list']/li[@clstag='shangpin|keycount|product|allpingjia']/@data-num").extract()[0]
         has_image_comment_nums = sel.xpath("//ul[@class='filter-list']/li[@clstag='shangpin|keycount|product|shaidantab']/@data-num").extract()[0]
@@ -55,7 +55,7 @@ def parse_good(good_id):
         good.price = price
         good.image_list = json.dumps(image_list)
         good.supplier = supplier
-        good.good_rate = good_rate
+        good.good_rate = 0
         good.comment_nums = get_number(comment_nums)
         good.has_image_comment_nums = get_number(has_image_comment_nums)
         good.has_video_comment_nums = get_number(has_video_comment_nums)
@@ -69,9 +69,27 @@ def parse_good(good_id):
             good.save()
         else:
             good.save(force_insert=True)
+
+        """处理商品评论标签汇总"""
+        for tag in tag_list:
+            matched = re.match("(.*)\((\d+)\)", tag)
+            if matched:
+                tag_name = matched.group(1)
+                tag_nums = matched.group(2)
+                has_exist_in_db = GoodEvaluateSummary.select().where(GoodEvaluateSummary.good == good, GoodEvaluateSummary.tag == tag_name)
+                if has_exist_in_db:
+                    summary = has_exist_in_db[0]
+                else:
+                    summary = GoodEvaluateSummary(good=good)
+
+                summary.tag = tag_name
+                summary.num = tag_nums
+                summary.save()
+        """处理商品的评论"""
+        print("ok")
     finally:
-        browser.close()
-        pass
+        browser.quit()
+        # browser.close()
 
 
 def get_number(s):
@@ -81,6 +99,6 @@ def get_number(s):
 
 
 if __name__ == '__main__':
-    parse_good(100010816812)
+    parse_good(100011386554)
     # print(get_number("400+"))
     pass
