@@ -3,6 +3,7 @@
 
 import requests
 import json
+import pickle
 
 
 def login():
@@ -10,7 +11,7 @@ def login():
     form_data = {
         "ck": "",
         "name": "18392889591",
-        "password": "13123123",
+        "password": "123456!",
         "remember": "false",
         "ticket": ""
     }
@@ -26,6 +27,12 @@ def login():
         print("登录ok")
     else:
         print("登录failure")
+
+    cookie_jar = resp.cookies
+    with open("douban.cookie", "wb") as f:
+        pickle.dump(cookie_jar, f)
+
+    print("ok")
 
 
 if __name__ == '__main__':
